@@ -1,61 +1,55 @@
-//SJF using non-premitive approach in c program
+//SJF using premitive approach in c program
 #include <stdio.h>
-
+#include<limits.h>
 struct Process {
-    int id;       
-    int burstTime; 
+    int id;         
+    int arrival;    
+    int burst;      
 };
-
-void swap(struct Process* a, struct Process* b) {
-    struct Process temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-void sortByBurstTime(struct Process processes[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        int minIndex = i;
-        for (int j = i + 1; j < n; j++) {
-            if (processes[j].burstTime < processes[minIndex].burstTime) {
-                minIndex = j;
+void sjfScheduling(struct Process processes[], int n) {
+    int totalTime = 0; 
+    int waitingTime[n]; 
+    for (int i = 0; i < n; i++) {
+        waitingTime[i] = 0;
+    }
+    for (int i = 0; i < n; i++) {
+        int shortest = -1; 
+        int shortestBurst = INT_MAX;
+        for (int j = 0; j < n; j++) {
+            if (processes[j].arrival <= totalTime && processes[j].burst < shortestBurst && processes[j].burst > 0) {
+                shortest = j;
+                shortestBurst = processes[j].burst;
             }
         }
-        if (i != minIndex) {
-            swap(&processes[i], &processes[minIndex]);
+        if (shortest == -1) {
+            totalTime++;
+        } else {
+            waitingTime[shortest] = totalTime - processes[shortest].arrival;
+            totalTime += processes[shortest].burst;
+            processes[shortest].burst = 0;
         }
     }
-}
-
-void SJF(struct Process processes[], int n) {
-    sortByBurstTime(processes, n);
-    printf("Process Execution Order: ");
-    int currentTime = 0;
+    float totalWaitingTime = 0;
     for (int i = 0; i < n; i++) {
-        printf("P%d ", processes[i].id);
-        currentTime += processes[i].burstTime;
+        totalWaitingTime += waitingTime[i];
+        printf("Process %d: Waiting Time = %d\n", i + 1, waitingTime[i]);
     }
-    printf("\n");
+    float averageWaitingTime = totalWaitingTime / n;
+    printf("Average Waiting Time = %.2f\n", averageWaitingTime);
 }
-
 int main() {
     int n;
     printf("Enter the number of processes: ");
     scanf("%d", &n);
-
     struct Process processes[n];
-
     for (int i = 0; i < n; i++) {
         processes[i].id = i + 1;
-        printf("Enter burst time for process P%d: ", processes[i].id);
-        scanf("%d", &processes[i].burstTime);
+        printf("Enter arrival time for Process %d: ", i + 1);
+        scanf("%d", &processes[i].arrival);
+        printf("Enter burst time for Process %d: ", i + 1);
+        scanf("%d", &processes[i].burst);
     }
-
-    SJF(processes, n);
+    sjfScheduling(processes, n);
 
     return 0;
 }
-
-
-
-
-
